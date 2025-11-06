@@ -5,7 +5,7 @@ from . import crud
 from ..utils.utils import *
 from .. import models
 from sqlalchemy.orm import Session
-from typing import List, Dict
+from typing import Tuple, Dict, List, Any
 
 EXPECTED_COLS = [
   "order_id", "order_date", "customer_id", "customer_name", "customer_email",
@@ -20,10 +20,7 @@ def read_excel_file(upload_file: UploadFile) -> pd.DataFrame:
   df = pd.read_excel(upload_file.file, engine="openpyxl", dtype=object)
   return df
 
-def validate_and_normalize_row(row: pd.Series, row_num:int) -> (dict, dict, list):
-  """
-  Returns: (customer_dict, order_dict, items_list, errors_list)
-  """
+def validate_and_normalize_row(row: pd.Series, row_num: int) -> Tuple[Dict[str, Any], Dict[str, Any], List[Dict[str, Any]], List[Dict[str, Any]]]:  
   errors = []
   # map and normalize
   def val(col): return row.get(col, None) if col in row.index else None

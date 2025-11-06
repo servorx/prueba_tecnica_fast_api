@@ -7,8 +7,8 @@ sqlalchemy
 pymysql
 sqlmodel
 
-# Migraciones 
-alembic
+# # Migraciones 
+# alembic
 
 # Librerías para trabajar con archivos
 pandas
@@ -17,3 +17,6 @@ python-multipart
 
 # Variables de entorno
 python-dotenv
+
+# pruebas de fastapi
+pytest

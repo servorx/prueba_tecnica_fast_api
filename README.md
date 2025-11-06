@@ -1,4 +1,4 @@
-# Proycto prueba tecnica lectura de excel 
+# Proyecto prueba tecnica lectura de excel 
 
 ## Paso a paso para ejecutar el proyecto
 
