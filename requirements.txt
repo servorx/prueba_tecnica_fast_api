@@ -1,0 +1,19 @@
+# Framework principal
+fastapi 
+uvicorn[standard]
+
+# ORM y conexión a MySQL
+sqlalchemy
+pymysql
+sqlmodel
+
+# Migraciones 
+alembic
+
+# Librerías para trabajar con archivos
+pandas
+openpyxl
+python-multipart
+
+# Variables de entorno
+python-dotenv
