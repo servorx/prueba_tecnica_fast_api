@@ -2,7 +2,7 @@ from typing import List, Optional
 from pydantic import BaseModel
 from datetime import date
 
-# esquemas que se utilizan en la base de datos para usar ORMs 
+# esquemas que se utilizan en la base de datos para estructurar validaciones y respuestas de datos 
 class OrderItemSchema(BaseModel):
   sku: str
   qty: int

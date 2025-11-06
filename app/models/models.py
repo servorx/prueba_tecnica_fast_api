@@ -2,6 +2,7 @@ from sqlalchemy import Column, BigInteger, String, Date, Numeric, Integer, Forei
 from sqlalchemy.orm import relationship
 from ..config.db import Base
 
+# los modelos de la base de datos representan las tablas de la base de datos con ORM
 class Customer(Base):
     __tablename__ = "customers"
     customer_id = Column(BigInteger, primary_key=True)

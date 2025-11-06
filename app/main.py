@@ -1,8 +1,8 @@
 from fastapi import FastAPI, UploadFile, File, Depends, HTTPException
-from .db import engine, Base, get_session
-from .ingest import ingest_file
+from .config.db import engine, Base, get_session
+from .controllers.ingest import ingest_file
 from sqlalchemy.orm import Session
-from .schemas import IngestSummary, OrderSchema
+from .schemas.schemas import IngestSummary, OrderSchema
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 from . import models

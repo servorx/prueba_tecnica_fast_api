@@ -1,7 +1,9 @@
 from fastapi import UploadFile
 import pandas as pd
-from .utils import *
-from . import crud, models
+
+from . import crud
+from ..utils.utils import *
+from .. import models
 from sqlalchemy.orm import Session
 from typing import List, Dict
 
