@@ -1,77 +1,8 @@
-from fastapi import FastAPI, UploadFile, File, Depends, HTTPException
-from .config.db import engine, Base, get_session
-from .controllers.ingest import ingest_file
-from sqlalchemy.orm import Session
-from .schemas.schemas import IngestSummary, OrderSchema
-from fastapi.responses import JSONResponse
-from fastapi.encoders import jsonable_encoder
-from . import models
-from sqlalchemy import func, desc
+# main.py
+import uvicorn
+from app.routes.routes import create_app
 
-app = FastAPI(title="Excel Ingest API")
+app = create_app()
 
-# Crear tablas (solo en dev; en prod usar migraciones)
-Base.metadata.create_all(bind=engine)
-
-@app.get("/health")
-def health():
-  return {"status": "ok"}
-
-@app.post("/ingest", response_model=IngestSummary)
-async def ingest(file: UploadFile = File(...), db: Session = Depends(get_session)):
-  try:
-    result = ingest_file(file, db)
-  except ValueError as ve:
-    raise HTTPException(status_code=400, detail=str(ve))
-  except Exception as e:
-    # si hay un error inesperado
-    raise HTTPException(status_code=500, detail=str(e))
-  return JSONResponse(content=jsonable_encoder(result))
-
-@app.get("/schema")
-def schema_example():
-  example = {
-    "order_id": 12345,
-    "order_date": "2023-08-01",
-    "customer_id": 987,
-    "status": "paid",
-    "shipping_method": "express",
-    "coupon_code": None,
-    "items": [
-      {"sku": "SKU-111", "qty": 2, "unit_price": 12.50, "line_total": 25.00},
-      {"sku": "SKU-222", "qty": 1, "unit_price": 5.00, "line_total": 5.00}
-    ]
-  }
-  return example
-
-@app.get("/db/summary")
-def db_summary(db: Session = Depends(get_session)):
-  # #clientes
-  total_customers = db.query(func.count(models.Customer.customer_id)).scalar()
-  total_orders = db.query(func.count(models.Order.order_id)).scalar()
-  total_items = db.query(func.count(models.OrderItem.id)).scalar()
-
-  revenue_q = db.query(
-    models.Order.status,
-    func.sum(models.OrderItem.line_total).label("sum_total")
-  ).join(models.OrderItem, models.Order.order_id == models.OrderItem.order_id).group_by(models.Order.status)
-
-  revenue = {"paid": 0.0, "pending": 0.0, "canceled": 0.0}
-  for status, s in revenue_q:
-    revenue[status] = float(s or 0.0)
-
-  # top5 productos por revenue
-  top_products = db.query(
-    models.OrderItem.sku,
-    func.sum(models.OrderItem.line_total).label("revenue")
-  ).group_by(models.OrderItem.sku).order_by(desc("revenue")).limit(5).all()
-
-  top5 = [{"sku": t[0], "revenue": float(t[1])} for t in top_products]
-
-  return {
-    "customers": total_customers,
-    "orders": total_orders,
-    "items": total_items,
-    "revenue": revenue,
-    "top5_products": top5
-  }
+if __name__ == "__main__":
+    uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)
