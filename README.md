@@ -10,7 +10,11 @@ code .
 ```
 
 ### Instalar dependencias
+el entorno de desarrollo se requiere para poder instalar las dependencias de forma aislada
 ```bash
+python3 -m venv venv
+source venv/bin/activate
+pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
