@@ -38,7 +38,7 @@ Este proyecto implementa un backend FastAPI para la ingestión, validación y pe
 ├── README.md
 └── requirements.txt
 ```
-
+ 
 ---
 
 ## ⚙️ Paso a paso para ejecutar el proyecto
