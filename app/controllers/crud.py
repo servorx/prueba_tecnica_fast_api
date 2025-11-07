@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 from app.models.models import Customer, Order, OrderItem
 from datetime import date
 
+# funciones para insertar o actualizar registros en la base de datos
 def upsert_customer(session: Session, customer_obj: dict):
   existing = None
   # buscar por email si existe

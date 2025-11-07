@@ -1,5 +1,7 @@
+# imports de librerías y dependencias
 import pandas as pd
 from typing import Tuple, Dict, List, Any
+# imports de módulos internos (validaciones)
 from app.utils.utils import (
   normalize_str, parse_date_any, basic_email_check,
   VALID_STATUS, VALID_SHIPPING, is_empty
@@ -28,6 +30,7 @@ def validate_and_normalize_row(row: pd.Series, row_num: int) -> Tuple[Dict[str, 
       "field": "order_id",
       "message": "order_id missing"
     })
+  # Validar nombre del cliente
   if is_empty(customer_name):
     errors.append({
       "row": row_num,
@@ -49,14 +52,22 @@ def validate_and_normalize_row(row: pd.Series, row_num: int) -> Tuple[Dict[str, 
       "field": "status",
       "message": f"invalid status (allowed: {', '.join(VALID_STATUS)})"
     })
+  # Validar método de envío
   if not is_empty(shipping_method) and shipping_method.lower() not in VALID_SHIPPING:
     errors.append({
       "row": row_num,
       "field": "shipping_method",
       "message": f"invalid shipping_method (allowed: {', '.join(VALID_SHIPPING)})"
     })
+  # validaciones de fecha
+  if order_date is None:
+    errors.append({
+      "row": row_num,
+      "field": "order_date",
+      "message": "order_date missing"
+    })
 
-  # --- Validación de items ---
+  # Validación de items
   items = []
   item_sku = normalize_str(val("item_sku"))
   quantity = val("quantity")
@@ -100,6 +111,7 @@ def validate_and_normalize_row(row: pd.Series, row_num: int) -> Tuple[Dict[str, 
         "line_total": 0.0
       })
 
+    # Solo si ambos están presentes correctamente, agregamos el item
     if item_sku and quantity_v and quantity_v > 0:
       items.append({
         "sku": item_sku,
@@ -114,6 +126,7 @@ def validate_and_normalize_row(row: pd.Series, row_num: int) -> Tuple[Dict[str, 
     "email": customer_email
   }
 
+  # objetos normalizados
   order = {
     "order_id": int(order_id) if not is_empty(order_id) else None,
     "order_date": order_date,

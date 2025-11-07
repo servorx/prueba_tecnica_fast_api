@@ -1,3 +1,4 @@
+# este ficheron contiene las columnas esperadas en el archivo Excel
 EXPECTED_COLS = [
   "order_id", "order_date", "customer_id", "customer_name", "customer_email",
   "phone", "address_line", "city", "state", "country", "postal_code",

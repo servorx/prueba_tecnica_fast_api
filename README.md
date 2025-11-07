@@ -33,6 +33,7 @@ alembic upgrade head
 se realiza la conexion con el servidor de MySQL por lo que no se necesita XAMPP
 ```bash
 DB_URL="mysql://campus2023:campus2023@localhost:3306/prueba_tecnica?schema=public"
+DB_NAME="prueba_tecnica"
 ```
 
 ## Ejecutar el proyecto

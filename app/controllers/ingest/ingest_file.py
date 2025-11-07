@@ -1,19 +1,23 @@
+# imports de librerías y dependencias
 from sqlalchemy.orm import Session
 from fastapi import UploadFile
 from typing import Dict, Any
 
+# imports de módulos internos
 from app.models.models import OrderItem
 from app.controllers.crud import upsert_customer, upsert_order
 from app.controllers.ingest.read_excel import read_excel_file
 from app.controllers.ingest.validate_row import validate_and_normalize_row
 from app.controllers.ingest.constants import EXPECTED_COLS
 
+# esta funcion recibe un archivo Excel y lo carga en la base de datos
 def ingest_file(upload_file: UploadFile, db: Session) -> Dict[str, Any]:
   df = read_excel_file(upload_file)
 
   # Verificar columnas esperadas
   missing = [c for c in EXPECTED_COLS if c not in df.columns]
   if missing:
+    # si faltan columnas esperadas, lanzar un error
     raise ValueError(f"Missing expected columns: {missing}")
 
   rows_read = len(df)
@@ -22,6 +26,7 @@ def ingest_file(upload_file: UploadFile, db: Session) -> Dict[str, Any]:
   updated_customers = updated_orders = 0
 
   try:
+    # iterar por cada fila del archivo Excel
     for idx, row in df.iterrows():
       row_num = int(idx) + 2  # Excel row number (1 header + 1 offset)
 
@@ -56,10 +61,12 @@ def ingest_file(upload_file: UploadFile, db: Session) -> Dict[str, Any]:
 
     db.commit()
 
+  # si hay un error general, hacer rollback
   except Exception as e:
     db.rollback()
     raise e
 
+  # retornar resultados
   return {
     "rows_read": rows_read,
     "inserted_customers": inserted_customers,

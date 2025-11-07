@@ -17,6 +17,3 @@ python-multipart
 
 # Variables de entorno
 python-dotenv
-
-# pruebas de fastapi
-pytest
