@@ -3,11 +3,11 @@ import pandas as pd
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, declarative_base
 # importar desde la aplicación
-from app.models.models import Base, Order
-from app.controllers.ingest import validate_and_normalize_row, ingest_file
-from app.main import app
+from models.models import Base, Order
+from controllers.ingest import validate_and_normalize_row, ingest_file
+from main import app
 
 client = TestClient(app)
 
@@ -78,8 +78,10 @@ def test_idempotency(db_session):
 
 @pytest.fixture
 def db_session():
+    # Crear nueva metadata y Base solo para las pruebas
+    BaseTest = declarative_base()
     engine = create_engine("sqlite:///:memory:")
-    Base.metadata.create_all(engine)
+    BaseTest.metadata.create_all(bind=engine)
     Session = sessionmaker(bind=engine)
     session = Session()
     yield session

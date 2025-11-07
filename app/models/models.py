@@ -1,6 +1,6 @@
 from sqlalchemy import Column, BigInteger, String, Date, Numeric, Integer, ForeignKey
 from sqlalchemy.orm import relationship
-from ..config.db import Base
+from app.config.db import Base
 
 # los modelos de la base de datos representan las tablas de la base de datos con ORM
 class Customer(Base):

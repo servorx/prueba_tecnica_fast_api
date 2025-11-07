@@ -1,5 +1,5 @@
 # Framework principal
-fastapi 
+fastapi[all]
 uvicorn[standard]
 
 # ORM y conexión a MySQL

@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from ..models.models import Customer, Order, OrderItem
+from app.models.models import Customer, Order, OrderItem
 from datetime import date
 
 def upsert_customer(session: Session, customer_obj: dict):
