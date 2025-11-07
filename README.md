@@ -115,4 +115,46 @@ la api se ejecuta en http://localhost:8000
 
 - Items asociados a órdenes; persistencia condicional si fila contiene SKU y cantidad válida.
 
-- Estructura basada en hexagonal architecture: controllers, services, repositories, utils, routes
+- Estructura basada en hexagonal architecture: controllers, services, repositories, utils, routes.
+
+--- 
+
+## ⚡ Manejo de errores
+
+- Errores de validación por fila se retornan como JSON:
+```json
+{
+  "row": 10,
+  "field": "customer_email",
+  "message": "invalid email format"
+}
+```
+- Errores de base de datos (constraint violations) se agregan al reporte de ingest:
+```json
+{
+  "row": 10,
+  "message": "DB error: Column 'order_date' cannot be null"
+}
+```
+
+---
+
+## 🗂️ Notas adicionales
+
+- Se soporta sparse data, lo que significa que filas incompletas no bloquean la carga de otras filas válidas.
+
+- La base de datos se puede crear automáticamente al iniciar db.py.
+
+- Validaciones y limpieza se realizan en app/utils/utils.py y validate_row.py.
+
+- Compatible con Python 3.12 y FastAPI 0.100+.
+
+---
+
+## 📝 Licencia
+
+Este proyecto está bajo la licencia MIT. Consulta el archivo LICENSE para obtener más detalles.
+
+## 📄 Autor
+
+[Ángel David](https://github.com/servorx)
