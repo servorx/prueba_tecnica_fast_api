@@ -10,8 +10,8 @@ def validate_and_normalize_row(row: pd.Series, row_num: int) -> Tuple[Dict[str, 
   # Devuelve tuplas con los datos de cliente, orden, items y errores.
   errors = []
 
-  def val(col): 
-    return row.get(col, None) if col in row.index else None
+  def val(col):
+    return row[col] if col in row else None
 
   # Normalización
   order_id = val("order_id")
@@ -24,58 +24,81 @@ def validate_and_normalize_row(row: pd.Series, row_num: int) -> Tuple[Dict[str, 
   # Validaciones mínimas
   if is_empty(order_id):
     errors.append({
-      "row": row_num, 
-      "field": "order_id", 
+      "row": row_num,
+      "field": "order_id",
       "message": "order_id missing"
     })
   if is_empty(customer_name):
     errors.append({
-      "row": row_num, 
-      "field": "customer_name", 
+      "row": row_num,
+      "field": "customer_name",
       "message": "customer_name missing"
     })
-  if not basic_email_check(customer_email):
+
+  # Validación del email (solo si existe)
+  if not is_empty(customer_email) and not basic_email_check(customer_email):
     errors.append({
-      "row": row_num, 
-      "field": "customer_email", 
+      "row": row_num,
+      "field": "customer_email",
       "message": "invalid email format"
     })
+  # Validación de status y shipping
   if not is_empty(status) and status.lower() not in VALID_STATUS:
     errors.append({
-      "row": row_num, 
-      "field": "status", 
-      "message": f"invalid status (allowed: {','.join(VALID_STATUS)})"
+      "row": row_num,
+      "field": "status",
+      "message": f"invalid status (allowed: {', '.join(VALID_STATUS)})"
     })
   if not is_empty(shipping_method) and shipping_method.lower() not in VALID_SHIPPING:
     errors.append({
-      "row": row_num, 
-      "field": "shipping_method", 
-      "message": f"invalid shipping_method (allowed: {','.join(VALID_SHIPPING)})"
+      "row": row_num,
+      "field": "shipping_method",
+      "message": f"invalid shipping_method (allowed: {', '.join(VALID_SHIPPING)})"
     })
-  if not is_empty(row.get("customer_email")):
-    email = row.get("customer_email")
-    if not is_empty(email) and not basic_email_check(email):
-      errors.append({
-        "field": "customer_email",
-        "message": "invalid email format",
-        "row": row_num
-      })
 
-  # Items
+  # --- Validación de items ---
   items = []
   item_sku = normalize_str(val("item_sku"))
   quantity = val("quantity")
 
+  # Permitir filas sin items (no se consideran error)
   if not is_empty(item_sku) or not is_empty(quantity):
     try:
       quantity_v = int(quantity) if not is_empty(quantity) else None
     except Exception:
       quantity_v = None
 
-    if is_empty(item_sku):
-      errors.append({"row": row_num, "field": "item_sku", "message": "item sku missing"})
-    if quantity_v is None or quantity_v <= 0:
-      errors.append({"row": row_num, "field": "quantity", "message": "qty must be > 0"})
+  # Validar items solo si uno de los dos campos está presente
+  if not is_empty(item_sku) or not is_empty(quantity):
+    try:
+      quantity_v = int(quantity) if not is_empty(quantity) else None
+    except Exception:
+      quantity_v = None
+
+    # Caso: hay cantidad pero no SKU
+    if is_empty(item_sku) and not is_empty(quantity):
+      errors.append({
+        "row": row_num,
+        "field": "item_sku",
+        "message": "item sku missing"
+      })
+
+    # Caso: hay SKU pero cantidad inválida
+    if not is_empty(item_sku) and (quantity_v is None or quantity_v <= 0):
+      errors.append({
+        "row": row_num,
+        "field": "quantity",
+        "message": "qty must be > 0"
+      })
+
+    # Solo si ambos están presentes correctamente, agregamos el item
+    if not is_empty(item_sku) and quantity_v and quantity_v > 0:
+      items.append({
+        "sku": item_sku,
+        "qty": quantity_v,
+        "unit_price": 0.0,
+        "line_total": 0.0
+      })
 
     if item_sku and quantity_v and quantity_v > 0:
       items.append({
@@ -85,6 +108,7 @@ def validate_and_normalize_row(row: pd.Series, row_num: int) -> Tuple[Dict[str, 
         "line_total": 0.0
       })
 
+  # objetos normalizados 
   customer = {
     "name": customer_name,
     "email": customer_email
@@ -95,7 +119,6 @@ def validate_and_normalize_row(row: pd.Series, row_num: int) -> Tuple[Dict[str, 
     "order_date": order_date,
     "status": status.lower() if status else None,
     "shipping_method": shipping_method.lower() if shipping_method else None,
-    # aun no se asigno el id de cliente, se asignará en la etapa de insertar
     "customer_id": None
   }
 
