@@ -22,6 +22,7 @@ def is_empty(v):
     return True
   return False
 
+# normalizar cadenas de texto
 def normalize_str(x: Optional[str]) -> Optional[str]:
   if x is None:
     return None
@@ -30,6 +31,7 @@ def normalize_str(x: Optional[str]) -> Optional[str]:
     return s if s != "" else None
   return str(x)
 
+# parsear fechas de una cadena de texto
 def parse_date_any(x):
   if is_empty(x):
     return None
@@ -42,6 +44,7 @@ def parse_date_any(x):
   except Exception:
     return None
 
+# validar correo electrónico
 def basic_email_check(email: Optional[str]) -> bool:
   if email is None:
     return True  # nullable allowed

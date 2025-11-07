@@ -23,6 +23,7 @@ def create_app() -> FastAPI:
   def health():
     return {"status": "ok"}
 
+  # ruta para ingestión de archivos Excel
   @app.post("/ingest", response_model=IngestSummary)
   async def ingest(file: UploadFile = File(...), db: Session = Depends(get_session)):
     try:
@@ -33,6 +34,7 @@ def create_app() -> FastAPI:
       raise HTTPException(status_code=500, detail=str(e))
     return JSONResponse(content=jsonable_encoder(result))
 
+  # esquema estatico de ejemplo para la ruta /schema
   @app.get("/schema")
   def schema_example():
     example = {
@@ -49,12 +51,15 @@ def create_app() -> FastAPI:
     }
     return example
 
+  # ruta para obtener un resumen de la base de datos
   @app.get("/db/summary")
   def db_summary(db: Session = Depends(get_session)):
+    # recuperar totales de clientes, pedidos y items
     total_customers = db.query(func.count(Customer.customer_id)).scalar()
     total_orders = db.query(func.count(Order.order_id)).scalar()
     total_items = db.query(func.count(OrderItem.id)).scalar()
 
+    # recuperar totales de ventas por estado
     revenue_q = db.query(
       Order.status,
       func.sum(OrderItem.line_total).label("sum_total")
@@ -62,10 +67,12 @@ def create_app() -> FastAPI:
       OrderItem, Order.order_id == OrderItem.order_id
     ).group_by(Order.status)
 
+    # agregar totales de ventas por estado
     revenue = {"paid": 0.0, "pending": 0.0, "canceled": 0.0}
     for status, s in revenue_q:
       revenue[status] = float(s or 0.0)
 
+    # devuelve un diccionario con los totales
     return {
       "total_customers": total_customers,
       "total_orders": total_orders,

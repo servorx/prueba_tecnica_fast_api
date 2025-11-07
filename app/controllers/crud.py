@@ -26,17 +26,12 @@ def upsert_customer(session: Session, customer_obj: dict):
     session.flush() 
     return instance
 
+# esta función actualiza un registro de orden en la base de datos
 def upsert_order(session: Session, order_obj: dict):
   instance = Order(**order_obj)
+  # hacer un merge para actualizar el registro si existe pero no lo guarda
   merged = session.merge(instance)
+  # guardar los cambios en la base de datos sin hacer commit
   session.flush()
+  # retornar el registro actualizado
   return merged
-
-def insert_items(session: Session, items_objs: list):
-  inserted = []
-  for it in items_objs:
-    oi = OrderItem(**it)
-    session.add(oi)
-    inserted.append(oi)
-  session.flush()
-  return inserted

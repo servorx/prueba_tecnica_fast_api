@@ -9,4 +9,4 @@ services:
       MYSQL_USER: campus2023
       MYSQL_PASSWORD: campus2023
     ports:
-      - "3308:3306"
+      - "3307:3306"
