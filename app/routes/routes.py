@@ -66,19 +66,11 @@ def create_app() -> FastAPI:
     for status, s in revenue_q:
       revenue[status] = float(s or 0.0)
 
-    top_products = db.query(
-      OrderItem.sku,
-      func.sum(OrderItem.line_total).label("revenue")
-    ).group_by(OrderItem.sku).order_by(desc("revenue")).limit(5).all()
-
-    top5 = [{"sku": t[0], "revenue": float(t[1])} for t in top_products]
-
     return {
-      "customers": total_customers,
-      "orders": total_orders,
-      "items": total_items,
-      "revenue": revenue,
-      "top5_products": top5
+      "total_customers": total_customers,
+      "total_orders": total_orders,
+      "total_items": total_items,
+      "revenue": revenue
     }
 
   return app
