@@ -23,15 +23,43 @@ def validate_and_normalize_row(row: pd.Series, row_num: int) -> Tuple[Dict[str, 
 
   # Validaciones mínimas
   if is_empty(order_id):
-    errors.append({"row": row_num, "field": "order_id", "message": "order_id missing"})
+    errors.append({
+      "row": row_num, 
+      "field": "order_id", 
+      "message": "order_id missing"
+    })
   if is_empty(customer_name):
-    errors.append({"row": row_num, "field": "customer_name", "message": "customer_name missing"})
+    errors.append({
+      "row": row_num, 
+      "field": "customer_name", 
+      "message": "customer_name missing"
+    })
   if not basic_email_check(customer_email):
-    errors.append({"row": row_num, "field": "customer_email", "message": "invalid email format"})
+    errors.append({
+      "row": row_num, 
+      "field": "customer_email", 
+      "message": "invalid email format"
+    })
   if not is_empty(status) and status.lower() not in VALID_STATUS:
-    errors.append({"row": row_num, "field": "status", "message": f"invalid status (allowed: {','.join(VALID_STATUS)})"})
+    errors.append({
+      "row": row_num, 
+      "field": "status", 
+      "message": f"invalid status (allowed: {','.join(VALID_STATUS)})"
+    })
   if not is_empty(shipping_method) and shipping_method.lower() not in VALID_SHIPPING:
-    errors.append({"row": row_num, "field": "shipping_method", "message": f"invalid shipping_method (allowed: {','.join(VALID_SHIPPING)})"})
+    errors.append({
+      "row": row_num, 
+      "field": "shipping_method", 
+      "message": f"invalid shipping_method (allowed: {','.join(VALID_SHIPPING)})"
+    })
+  if not is_empty(row.get("customer_email")):
+    email = row.get("customer_email")
+    if not is_empty(email) and not basic_email_check(email):
+      errors.append({
+        "field": "customer_email",
+        "message": "invalid email format",
+        "row": row_num
+      })
 
   # Items
   items = []
@@ -57,12 +85,18 @@ def validate_and_normalize_row(row: pd.Series, row_num: int) -> Tuple[Dict[str, 
         "line_total": 0.0
       })
 
-  customer = {"name": customer_name, "email": customer_email}
+  customer = {
+    "name": customer_name,
+    "email": customer_email
+  }
+
   order = {
     "order_id": int(order_id) if not is_empty(order_id) else None,
     "order_date": order_date,
     "status": status.lower() if status else None,
-    "shipping_method": shipping_method.lower() if shipping_method else None
+    "shipping_method": shipping_method.lower() if shipping_method else None,
+    # aun no se asigno el id de cliente, se asignará en la etapa de insertar
+    "customer_id": None
   }
 
   return customer, order, items, errors

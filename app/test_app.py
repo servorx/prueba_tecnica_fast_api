@@ -5,7 +5,8 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 # importar desde la aplicación
-from models.models import Base, Order
+from app.models.models import Customer, Order
+from app.config.db import Base
 from controllers.ingest.validate_row import validate_and_normalize_row
 from controllers.ingest.ingest_file import ingest_file
 from main import app
@@ -27,8 +28,8 @@ def test_clean_load(tmp_path):
         result = validate_and_normalize_row(row, i)
         valid_rows.append(result)
 
-    customers = {r[0]['name'] for r in valid_rows}
-    assert len(customers) == 2
+    customers_name = {r[0]['name'] for r in valid_rows}
+    assert len(customers_name) == 2
     assert all(len(r[3]) == 0 for r in valid_rows)  # sin errores
 
 def test_dirty_load(tmp_path):
@@ -68,18 +69,18 @@ def test_db_summary():
 
 def test_idempotency(db_session):
     # Primera carga
-    ingest_file("data_clean.xlsx", db_session)
+    ingest_file("app/data/orders_wide_clean_v3.xlsx", db_session)
     count_1 = db_session.query(Order).count()
 
     # Segunda carga del mismo archivo
-    ingest_file("data_clean.xlsx", db_session)
+    ingest_file("app/data/orders_wide_clean_v3.xlsx", db_session)
     count_2 = db_session.query(Order).count()
 
     assert count_2 == count_1  # no debe duplicar
 
 @pytest.fixture
 def db_session():
-    engine = create_engine("sqlite:///:memory:")
+    engine = create_engine("mysql+pymysql://campus2023:campus2023@localhost:3306/prueba_tecnica")
     # Limpia la metadata previa antes de recrear
     Base.metadata.clear()
     Base.metadata.create_all(engine)
