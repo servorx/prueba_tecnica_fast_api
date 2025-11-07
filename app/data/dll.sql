@@ -22,7 +22,8 @@ CREATE TABLE orders (
 
 CREATE TABLE order_items ( 
     id BIGINT PRIMARY KEY AUTO_INCREMENT, 
-    order_id BIGINT NOT NULL, sku VARCHAR(40) NOT NULL, 
+    order_id BIGINT NOT NULL, 
+    sku VARCHAR(40) NOT NULL, 
     qty INT NOT NULL, 
     unit_price DECIMAL(12,2) NOT NULL, 
     line_total DECIMAL(12,2) AS (qty * unit_price) STORED, 

@@ -19,6 +19,12 @@ def validate_and_normalize_row(row: pd.Series, row_num: int) -> Tuple[Dict[str, 
   order_id = val("order_id")
   customer_name = normalize_str(val("customer_name"))
   customer_email = normalize_str(val("customer_email"))
+  phone = normalize_str(val("phone"))
+  address_line = normalize_str(val("address_line")) 
+  city = normalize_str(val("city")) 
+  state = normalize_str(val("state")) 
+  country = normalize_str(val("country")) 
+  postal_code = normalize_str(val("postal_code"))
   status = normalize_str(val("status"))
   shipping_method = normalize_str(val("shipping_method"))
   order_date = parse_date_any(val("order_date"))
@@ -69,14 +75,21 @@ def validate_and_normalize_row(row: pd.Series, row_num: int) -> Tuple[Dict[str, 
   # --- Normalizar cliente y orden ---
   customer = {
     "name": customer_name,
-    "email": customer_email
+    "email": customer_email,
+    "phone": phone,
+    "address_line": address_line,
+    "city": city,
+    "state": state,
+    "country": country,
+    "postal_code": postal_code
   }
   order = {
     "order_id": int(order_id) if not is_empty(order_id) else None,
     "order_date": order_date,
     "status": status.lower() if status else None,
     "shipping_method": shipping_method.lower() if shipping_method else None,
-    "customer_id": None
+    "customer_id": None,
+    "coupon_code": normalize_str(val("coupon_code"))
   }
   # --- Validación y normalización de items ---
   items = []
