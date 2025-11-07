@@ -13,8 +13,14 @@ VALID_STATUS = {"paid", "pending", "canceled"}
 VALID_SHIPPING = {"standard", "express", "pickup"}
 
 # define si un valor es nulo o vacio y no es un NaN
-def is_empty(x):
-  return x is None or (isinstance(x, float) and math.isnan(x)) or (isinstance(x, str) and x.strip() == "")
+def is_empty(v):
+  if v is None:
+    return True
+  if isinstance(v, float) and pd.isna(v):
+    return True
+  if isinstance(v, str) and v.strip() == "":
+    return True
+  return False
 
 def normalize_str(x: Optional[str]) -> Optional[str]:
   if x is None:

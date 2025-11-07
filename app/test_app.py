@@ -78,10 +78,10 @@ def test_idempotency(db_session):
 
 @pytest.fixture
 def db_session():
-    # Crear nueva metadata y Base solo para las pruebas
-    BaseTest = declarative_base()
     engine = create_engine("sqlite:///:memory:")
-    BaseTest.metadata.create_all(bind=engine)
+    # Limpia la metadata previa antes de recrear
+    Base.metadata.clear()
+    Base.metadata.create_all(engine)
     Session = sessionmaker(bind=engine)
     session = Session()
     yield session

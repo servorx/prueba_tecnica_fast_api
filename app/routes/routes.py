@@ -9,8 +9,7 @@ from sqlalchemy import func, desc
 from app.config.db import engine, Base, get_session
 from app.controllers.ingest import ingest_file
 from app.schemas.schemas import IngestSummary, OrderSchema
-from app import models
-
+from app.models.models import Customer, Order, OrderItem
 
 def create_app() -> FastAPI:
   # Crear app
@@ -52,25 +51,25 @@ def create_app() -> FastAPI:
 
   @app.get("/db/summary")
   def db_summary(db: Session = Depends(get_session)):
-    total_customers = db.query(func.count(models.Customer.customer_id)).scalar()
-    total_orders = db.query(func.count(models.Order.order_id)).scalar()
-    total_items = db.query(func.count(models.OrderItem.id)).scalar()
+    total_customers = db.query(func.count(Customer.customer_id)).scalar()
+    total_orders = db.query(func.count(Order.order_id)).scalar()
+    total_items = db.query(func.count(OrderItem.id)).scalar()
 
     revenue_q = db.query(
-      models.Order.status,
-      func.sum(models.OrderItem.line_total).label("sum_total")
+      Order.status,
+      func.sum(OrderItem.line_total).label("sum_total")
     ).join(
-      models.OrderItem, models.Order.order_id == models.OrderItem.order_id
-    ).group_by(models.Order.status)
+      OrderItem, Order.order_id == OrderItem.order_id
+    ).group_by(Order.status)
 
     revenue = {"paid": 0.0, "pending": 0.0, "canceled": 0.0}
     for status, s in revenue_q:
       revenue[status] = float(s or 0.0)
 
     top_products = db.query(
-      models.OrderItem.sku,
-      func.sum(models.OrderItem.line_total).label("revenue")
-    ).group_by(models.OrderItem.sku).order_by(desc("revenue")).limit(5).all()
+      OrderItem.sku,
+      func.sum(OrderItem.line_total).label("revenue")
+    ).group_by(OrderItem.sku).order_by(desc("revenue")).limit(5).all()
 
     top5 = [{"sku": t[0], "revenue": float(t[1])} for t in top_products]
 
