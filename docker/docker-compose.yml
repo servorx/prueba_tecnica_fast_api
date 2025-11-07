@@ -1,0 +1,12 @@
+version: '3.8'
+services:
+  db:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: campus2023
+      MYSQL_DATABASE: prueba_tecnica
+      MYSQL_USER: campus2023
+      MYSQL_PASSWORD: campus2023
+    ports:
+      - "3307:3306"
