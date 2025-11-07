@@ -35,3 +35,12 @@ def upsert_order(session: Session, order_obj: dict):
   session.flush()
   # retornar el registro actualizado
   return merged
+
+def upsert_items(session: Session, items_objs: list):
+  inserted = []
+  for it in items_objs:
+    oi = OrderItem(**it)
+    session.add(oi)
+    inserted.append(oi)
+  session.flush()
+  return inserted

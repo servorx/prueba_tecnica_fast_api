@@ -66,67 +66,11 @@ def validate_and_normalize_row(row: pd.Series, row_num: int) -> Tuple[Dict[str, 
       "field": "order_date",
       "message": "order_date missing"
     })
-
-  # Validación de items
-  items = []
-  item_sku = normalize_str(val("item_sku"))
-  quantity = val("quantity")
-
-  # Permitir filas sin items (no se consideran error)
-  if not is_empty(item_sku) or not is_empty(quantity):
-    try:
-      quantity_v = int(quantity) if not is_empty(quantity) else None
-    except Exception:
-      quantity_v = None
-
-  # Validar items solo si uno de los dos campos está presente
-  if not is_empty(item_sku) or not is_empty(quantity):
-    try:
-      quantity_v = int(quantity) if not is_empty(quantity) else None
-    except Exception:
-      quantity_v = None
-
-    # Caso: hay cantidad pero no SKU
-    if is_empty(item_sku) and not is_empty(quantity):
-      errors.append({
-        "row": row_num,
-        "field": "item_sku",
-        "message": "item sku missing"
-      })
-
-    # Caso: hay SKU pero cantidad inválida
-    if not is_empty(item_sku) and (quantity_v is None or quantity_v <= 0):
-      errors.append({
-        "row": row_num,
-        "field": "quantity",
-        "message": "qty must be > 0"
-      })
-
-    # Solo si ambos están presentes correctamente, agregamos el item
-    if not is_empty(item_sku) and quantity_v and quantity_v > 0:
-      items.append({
-        "sku": item_sku,
-        "qty": quantity_v,
-        "unit_price": 0.0,
-        "line_total": 0.0
-      })
-
-    # Solo si ambos están presentes correctamente, agregamos el item
-    if item_sku and quantity_v and quantity_v > 0:
-      items.append({
-        "sku": item_sku,
-        "qty": quantity_v,
-        "unit_price": 0.0,
-        "line_total": 0.0
-      })
-
-  # objetos normalizados 
+  # --- Normalizar cliente y orden ---
   customer = {
     "name": customer_name,
     "email": customer_email
   }
-
-  # objetos normalizados
   order = {
     "order_id": int(order_id) if not is_empty(order_id) else None,
     "order_date": order_date,
@@ -134,5 +78,34 @@ def validate_and_normalize_row(row: pd.Series, row_num: int) -> Tuple[Dict[str, 
     "shipping_method": shipping_method.lower() if shipping_method else None,
     "customer_id": None
   }
+  # --- Validación y normalización de items ---
+  items = []
+  # soporte para múltiples columnas de items si existieran: item_sku_1, item_qty_1, etc.
+  item_columns = [c for c in row.index if "item_sku" in c]
+  for sku_col in item_columns:
+    suffix = sku_col.split("item_sku")[-1]  # "_1", "_2", etc.
+    qty_col = f"item_qty{suffix}"
+    price_col = f"item_price{suffix}"
+
+    sku = normalize_str(val(sku_col))
+    qty = val(qty_col)
+    price = val(price_col)
+
+    if is_empty(sku) and not is_empty(qty):
+      errors.append({"row": row_num, "field": sku_col, "message": "item sku missing"})
+    if not is_empty(sku):
+      try:
+        qty_v = int(qty) if not is_empty(qty) else None
+      except Exception:
+        qty_v = None
+      if qty_v is None or qty_v <= 0:
+        errors.append({"row": row_num, "field": qty_col, "message": "qty must be > 0"})
+      else:
+        items.append({
+          "sku": sku,
+          "qty": qty_v,
+          "unit_price": float(price) if not is_empty(price) else 0.0,
+          "line_total": (float(price) * qty_v) if not is_empty(price) else 0.0
+        })
 
   return customer, order, items, errors
