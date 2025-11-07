@@ -6,7 +6,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 # importar desde la aplicación
 from models.models import Base, Order
-from controllers.ingest import validate_and_normalize_row, ingest_file
+from controllers.ingest.validate_row import validate_and_normalize_row
+from controllers.ingest.ingest_file import ingest_file
 from main import app
 
 client = TestClient(app)

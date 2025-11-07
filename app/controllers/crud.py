@@ -3,12 +3,6 @@ from app.models.models import Customer, Order, OrderItem
 from datetime import date
 
 def upsert_customer(session: Session, customer_obj: dict):
-    """
-    Upsert using session.merge for broad DB compatibility.
-    Returns tuple (is_inserted: bool, is_updated: bool)
-    """
-    # session.merge will either add or update based on PK
-    # But it performs a SELECT first; that's acceptable for this test task.
     instance = Customer(**customer_obj)
     merged = session.merge(instance)
     # flush to get DB to apply

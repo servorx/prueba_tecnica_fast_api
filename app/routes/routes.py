@@ -7,7 +7,7 @@ from sqlalchemy import func, desc
 
 # importaciones de módulos internos
 from app.config.db import engine, Base, get_session
-from app.controllers.ingest import ingest_file
+from app.controllers.ingest.ingest_file import ingest_file
 from app.schemas.schemas import IngestSummary, OrderSchema
 from app.models.models import Customer, Order, OrderItem
 
